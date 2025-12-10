@@ -21,7 +21,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   const [role, setRole] = useState<UserRole>('Student');
   const [error, setError] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
-  const [showCreateAccount, setShowCreateAccount] = useState(false);
+  const [showCreateAccount, setShowCreateAccount] = useState(true); // Changed to true to show signup first
   const [isLoading, setIsLoading] = useState(false);
   const [createForm, setCreateForm] = useState({
     username: '',
@@ -256,14 +256,26 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               </div>
             </div>
 
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowCreateAccount(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">
-                <UserPlus className="mr-2 h-4 w-4" />
-                Create Account
-              </Button>
+            <DialogFooter className="flex gap-2 flex-col">
+              <div className="text-sm text-gray-600 text-center mb-2">
+                Already have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => setShowCreateAccount(false)}
+                  className="text-blue-600 hover:underline font-medium"
+                >
+                  Login here
+                </button>
+              </div>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={() => setShowCreateAccount(false)} className="flex-1">
+                  Back to Login
+                </Button>
+                <Button type="submit" className="flex-1">
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Create Account
+                </Button>
+              </div>
             </DialogFooter>
           </form>
         </DialogContent>
