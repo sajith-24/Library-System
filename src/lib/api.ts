@@ -1,5 +1,5 @@
 import { User, Book, BorrowedBook, AlertSettings } from '../types';
-import { mockUsers, mockBooks, mockBorrows, mockSettings } from './mockData';
+import { mockUsers, mockBooks, mockBorrowedBooks, defaultSettings } from './mockData';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
 
 const API_BASE = `https://${projectId}.supabase.co/functions/v1/make-server-bf9395cb`;
@@ -228,7 +228,7 @@ export const borrowAPI = {
       return data.borrows;
     } catch (error) {
       if (USE_MOCK_DATA) {
-        return mockBorrows.map(borrow => ({
+        return mockBorrowedBooks.map(borrow => ({
           ...borrow,
           book: mockBooks.find(b => b.id === borrow.bookId),
           user: mockUsers.find(u => u.id === borrow.userId),
@@ -252,13 +252,13 @@ export const borrowAPI = {
           throw new Error('Book not available');
         }
         const newBorrow: BorrowedBook = {
-          id: (mockBorrows.length + 1).toString(),
+          id: (mockBorrowedBooks.length + 1).toString(),
           bookId,
           userId,
           borrowDate: new Date().toISOString(),
           dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
         };
-        mockBorrows.push(newBorrow);
+        mockBorrowedBooks.push(newBorrow);
         book.available--;
         return { ...newBorrow, book, user: mockUsers.find(u => u.id === userId) };
       }
@@ -275,7 +275,7 @@ export const borrowAPI = {
       return data.borrow;
     } catch (error) {
       if (USE_MOCK_DATA) {
-        const borrow = mockBorrows.find(b => b.id === borrowId);
+        const borrow = mockBorrowedBooks.find(b => b.id === borrowId);
         if (borrow) {
           borrow.returnDate = new Date().toISOString();
           if (fine !== undefined) {
@@ -302,7 +302,7 @@ export const settingsAPI = {
       return data.settings;
     } catch (error) {
       if (USE_MOCK_DATA) {
-        return mockSettings;
+        return defaultSettings;
       }
       throw error;
     }
@@ -317,8 +317,8 @@ export const settingsAPI = {
       return data.settings;
     } catch (error) {
       if (USE_MOCK_DATA) {
-        Object.assign(mockSettings, settings);
-        return mockSettings;
+        Object.assign(defaultSettings, settings);
+        return defaultSettings;
       }
       throw error;
     }
@@ -344,11 +344,11 @@ export const analyticsAPI = {
       return data.stats;
     } catch (error) {
       if (USE_MOCK_DATA) {
-        const activeBorrows = mockBorrows.filter(b => !b.returnDate);
+        const activeBorrows = mockBorrowedBooks.filter(b => !b.returnDate);
         const today = new Date().toISOString().split('T')[0];
         const overdue = activeBorrows.filter(b => b.dueDate < today);
-        const lowStock = mockBooks.filter(b => b.available <= mockSettings.lowStockThreshold);
-        const totalFines = mockBorrows.reduce((sum, b) => sum + (b.fine || 0), 0);
+        const lowStock = mockBooks.filter(b => b.available <= defaultSettings.lowStockThreshold);
+        const totalFines = mockBorrowedBooks.reduce((sum, b) => sum + (b.fine || 0), 0);
         const students = mockUsers.filter(u => u.role === 'Student');
 
         return {
